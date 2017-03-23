@@ -3,21 +3,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var default_rules_1 = require("./default-rules");
 var rule_1 = require("./rule");
 var RulesManager = (function () {
-    function RulesManager(htmlInputElement) {
-        this.htmlInputElement = htmlInputElement;
+    function RulesManager(inputDomManager) {
+        this.inputDomManager = inputDomManager;
     }
     RulesManager.appendRules = function (customRules) {
-        for (var ruleName in customRules) {
-            RulesManager.rules[ruleName] = customRules[ruleName];
+        var _loop_1 = function (i) {
+            RulesManager.rules.filter(function (rule) { return rule.name != customRules[i].name; });
+        };
+        for (var i = 0; i < customRules.length; i++) {
+            _loop_1(i);
         }
     };
     RulesManager.prototype.extractCallbackChain = function () {
         var callbackChain = [];
-        var ruleKeys = Object.keys(RulesManager.rules);
-        for (var i = 0; i < ruleKeys.length; i++) {
-            var attributeName = 'validation-' + ruleKeys[i];
-            if (this.htmlInputElement.hasAttribute(attributeName)) {
-                callbackChain.push(new rule_1.ValidationRule(RulesManager.rules[ruleKeys[i]], this.htmlInputElement));
+        for (var i = 0; i < RulesManager.rules.length; i++) {
+            var attributeName = RulesManager.rules[i].name;
+            if (this.inputDomManager.hasAttribute(attributeName)) {
+                callbackChain.push(new rule_1.ValidationRule(RulesManager.rules[i], this.inputDomManager));
             }
         }
         return callbackChain;

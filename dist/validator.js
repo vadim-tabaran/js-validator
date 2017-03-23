@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 10);
+/******/ 	return __webpack_require__(__webpack_require__.s = 13);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -73,7 +73,58 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var parallel_1 = __webpack_require__(1);
+var validate_input_1 = __webpack_require__(11);
+var form_1 = __webpack_require__(3);
+var Validator = (function () {
+    function Validator(target, config) {
+        if (config === void 0) { config = {}; }
+        this.formDomManager = new form_1.FormDomManager(target);
+        this.formDomManager.setElements();
+        this.initValidator();
+    }
+    Validator.prototype.validate = function () {
+    };
+    Validator.prototype.initValidator = function () {
+        this.initFormListener();
+        this.initInputsListeners();
+    };
+    Validator.prototype.initFormListener = function () {
+        var _this = this;
+        var formElement = this.formDomManager.getForm();
+        if (formElement === null) {
+            return;
+        }
+        formElement.addEventListener("submit", function (event) { return _this.onFormSubmit(event); });
+    };
+    Validator.prototype.initInputsListeners = function () {
+        var inputElements = this.formDomManager.getInputs();
+        if (inputElements.length === 0) {
+            return;
+        }
+        for (var i = 0; i < inputElements.length; i++) {
+            new validate_input_1.ValidateInput(inputElements[i]);
+        }
+    };
+    Validator.prototype.onFormSubmit = function (event) {
+    };
+    Validator.importRules = function () {
+    };
+    return Validator;
+}());
+Validator.preFix = 'v-';
+Validator.rulesSeparator = '|';
+exports.Validator = Validator;
+window["Validator"] = Validator;
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var parallel_1 = __webpack_require__(2);
 var Async = (function () {
     function Async() {
     }
@@ -86,7 +137,7 @@ exports.Async = Async;
 
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -111,15 +162,23 @@ var Parallel = (function () {
     Parallel.prototype.subscribe = function (callback) {
         var _this = this;
         this.endCallback = callback;
-        for (var i = 0; i < this.ruleStack.length; i++) {
-            this.ruleStack[i].execute(function (validatorResponse) {
-                _this.appendResponse(validatorResponse);
+        var _loop_1 = function (i) {
+            this_1.ruleStack[i].execute(function (validatorResponse, parameters) {
+                _this.appendResponse(validatorResponse, parameters, _this.ruleStack[i]);
             });
+        };
+        var this_1 = this;
+        for (var i = 0; i < this.ruleStack.length; i++) {
+            _loop_1(i);
         }
         return this;
     };
-    Parallel.prototype.appendResponse = function (validatorResponse) {
-        this.results.push(new Response(validatorResponse));
+    Parallel.prototype.appendResponse = function (validatorResponse, parameters, rule) {
+        this.results.push({
+            validatorResponse: validatorResponse,
+            parameters: parameters,
+            rule: rule,
+        });
         if (this.results.length === this.ruleStack.length) {
             this.endCallback(this.results);
         }
@@ -130,21 +189,21 @@ exports.Parallel = Parallel;
 
 
 /***/ }),
-/* 2 */
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var error_1 = __webpack_require__(3);
-var DomManager = (function () {
-    function DomManager(target) {
+var error_1 = __webpack_require__(5);
+var FormDomManager = (function () {
+    function FormDomManager(target) {
         this.formElement = null;
         this.inputs = [];
         this.target = '';
         this.target = target;
     }
-    DomManager.prototype.setElements = function () {
+    FormDomManager.prototype.setElements = function () {
         if (typeof this.target === 'string') {
             var targetElement = document.querySelector(this.target);
             if (targetElement instanceof HTMLFormElement) {
@@ -166,13 +225,13 @@ var DomManager = (function () {
         }
         return new error_1.ErrorHandler('invalidTarget', { 'target': this.target });
     };
-    DomManager.prototype.getForm = function () {
+    FormDomManager.prototype.getForm = function () {
         return this.formElement;
     };
-    DomManager.prototype.getInputs = function () {
+    FormDomManager.prototype.getInputs = function () {
         return this.inputs;
     };
-    DomManager.prototype.actualizeFormInputs = function () {
+    FormDomManager.prototype.actualizeFormInputs = function () {
         if (this.formElement === null) {
             return;
         }
@@ -183,16 +242,49 @@ var DomManager = (function () {
             }
         }
     };
-    DomManager.getAttributeValue = function (element, attributeKey) {
-        return element.getAttribute(attributeKey);
-    };
-    return DomManager;
+    return FormDomManager;
 }());
-exports.DomManager = DomManager;
+exports.FormDomManager = FormDomManager;
 
 
 /***/ }),
-/* 3 */
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var validator_1 = __webpack_require__(0);
+var InputDomManager = (function () {
+    function InputDomManager(input) {
+        this.input = input;
+    }
+    InputDomManager.prototype.getInput = function () {
+        return this.input;
+    };
+    InputDomManager.prototype.getValidateOnEvents = function () {
+        var validateOnAttributeValue = this.getAttribute('validate-on');
+        return validateOnAttributeValue ? validateOnAttributeValue.split('|') : ['change'];
+    };
+    InputDomManager.prototype.registerListener = function (event, onEventCallback) {
+        this.input.addEventListener(event, onEventCallback);
+    };
+    InputDomManager.prototype.hasAttribute = function (attrKey) {
+        return this.input.hasAttribute(validator_1.Validator.preFix + attrKey);
+    };
+    InputDomManager.prototype.getAttribute = function (attrKey) {
+        if (!this.hasAttribute(attrKey)) {
+            return false;
+        }
+        return this.input.getAttribute(validator_1.Validator.preFix + attrKey);
+    };
+    return InputDomManager;
+}());
+exports.InputDomManager = InputDomManager;
+
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -230,26 +322,40 @@ exports.ErrorHandler = ErrorHandler;
 
 
 /***/ }),
-/* 4 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var template_1 = __webpack_require__(7);
 var Message = (function () {
-    function Message(responses, element) {
-        this.responses = responses;
-        this.element = element;
-        this.showMessage();
+    function Message(inputDomManager) {
+        this.inputDomManager = inputDomManager;
     }
-    Message.prototype.showMessage = function () {
+    Message.prototype.show = function (responses) {
         var messages = [];
-        for (var i = 0; i < this.responses.length; i++) {
-            messages.push(this.getMessage(this.responses[i]));
+        for (var i = 0; i < responses.length; i++) {
+            messages.push(this.get(responses[i]));
         }
     };
-    Message.prototype.getMessage = function (response) {
-        return '';
+    Message.prototype.get = function (response) {
+        if (response === true) {
+            return false;
+        }
+        if (typeof response === 'string') {
+            var template = new template_1.Template(response, this.prepareTemplateParameters());
+            return template.extractMessage();
+        }
+        if (response === false) {
+            return 'response - false';
+        }
+    };
+    Message.prototype.prepareTemplateParameters = function () {
+        return {
+            attr: this.inputDomManager.getInput().attributes,
+            params: []
+        };
     };
     return Message;
 }());
@@ -257,49 +363,75 @@ exports.Message = Message;
 
 
 /***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.rules = {
-    required: {
-        selector: 'required',
-        name: 'required',
-        validate: function (next) {
-            next('hello world');
-        },
-        message: 'Field '
+var Template = (function () {
+    function Template(message, parameters) {
+        this.message = message;
+        this.parameters = parameters;
     }
-};
+    Template.prototype.extractMessage = function () {
+        var params = this.parseParams();
+        return 'This is extracted message';
+    };
+    Template.prototype.parseParams = function () {
+        var unpreparedParameters = this.message.match(/%.*?%/g);
+        return [];
+    };
+    return Template;
+}());
+exports.Template = Template;
 
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var default_rules_1 = __webpack_require__(5);
-var rule_1 = __webpack_require__(7);
+exports.rules = [
+    {
+        name: 'required',
+        validate: function (next) {
+            next('Hi i am %user.name%. I am %user.age% old!');
+        },
+        message: 'Field '
+    }
+];
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var default_rules_1 = __webpack_require__(8);
+var rule_1 = __webpack_require__(10);
 var RulesManager = (function () {
-    function RulesManager(htmlInputElement) {
-        this.htmlInputElement = htmlInputElement;
+    function RulesManager(inputDomManager) {
+        this.inputDomManager = inputDomManager;
     }
     RulesManager.appendRules = function (customRules) {
-        for (var ruleName in customRules) {
-            RulesManager.rules[ruleName] = customRules[ruleName];
+        var _loop_1 = function (i) {
+            RulesManager.rules.filter(function (rule) { return rule.name != customRules[i].name; });
+        };
+        for (var i = 0; i < customRules.length; i++) {
+            _loop_1(i);
         }
     };
     RulesManager.prototype.extractCallbackChain = function () {
         var callbackChain = [];
-        var ruleKeys = Object.keys(RulesManager.rules);
-        for (var i = 0; i < ruleKeys.length; i++) {
-            var attributeName = 'validation-' + ruleKeys[i];
-            if (this.htmlInputElement.hasAttribute(attributeName)) {
-                callbackChain.push(new rule_1.ValidationRule(RulesManager.rules[ruleKeys[i]], this.htmlInputElement));
+        for (var i = 0; i < RulesManager.rules.length; i++) {
+            var attributeName = RulesManager.rules[i].name;
+            if (this.inputDomManager.hasAttribute(attributeName)) {
+                callbackChain.push(new rule_1.ValidationRule(RulesManager.rules[i], this.inputDomManager));
             }
         }
         return callbackChain;
@@ -312,20 +444,34 @@ exports.RulesManager = RulesManager;
 
 
 /***/ }),
-/* 7 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var validator_1 = __webpack_require__(0);
 var ValidationRule = (function () {
-    function ValidationRule(rule, htmlInputElement) {
+    function ValidationRule(rule, inputDomManager) {
         this.rule = rule;
-        this.htmlInputElement = htmlInputElement;
+        this.inputDomManager = inputDomManager;
     }
     ValidationRule.prototype.execute = function (appendResponseCallback) {
-        this.rule.validate.call(this.htmlInputElement, appendResponseCallback);
+        var inputParameters = this.extractParameters();
+        var validatorParameters = [
+            function (validatorResponse) {
+                appendResponseCallback(validatorResponse, inputParameters);
+            }
+        ].concat(inputParameters);
+        this.rule.validate.apply(this.inputDomManager.getInput(), validatorParameters);
         return this;
+    };
+    ValidationRule.prototype.extractParameters = function () {
+        var attributeValue = this.inputDomManager.getAttribute(this.rule.name);
+        if (attributeValue === false) {
+            return [];
+        }
+        return attributeValue.split(this.inputDomManager.getAttribute('rule-separator') || validator_1.Validator.rulesSeparator);
     };
     return ValidationRule;
 }());
@@ -333,90 +479,64 @@ exports.ValidationRule = ValidationRule;
 
 
 /***/ }),
-/* 8 */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var dom_manager_1 = __webpack_require__(2);
-var manager_1 = __webpack_require__(6);
-var async_1 = __webpack_require__(0);
-var message_1 = __webpack_require__(4);
-var Validator = (function () {
-    function Validator(target, config) {
-        if (config === void 0) { config = {}; }
-        this.domManager = new dom_manager_1.DomManager(target);
-        this.domManager.setElements();
-        this.initValidator();
+var manager_1 = __webpack_require__(9);
+var async_1 = __webpack_require__(1);
+var message_1 = __webpack_require__(6);
+var input_1 = __webpack_require__(4);
+var ValidateInput = (function () {
+    function ValidateInput(input) {
+        this.inputDomManager = new input_1.InputDomManager(input);
+        this.rules = new manager_1.RulesManager(this.inputDomManager); //todo Rules manager
+        this.message = new message_1.Message(this.inputDomManager);
+        this.initListeners();
     }
-    Validator.prototype.validate = function () {
-    };
-    Validator.prototype.initValidator = function () {
-        this.initFormListener();
-        this.initInputsListeners();
-    };
-    Validator.prototype.initFormListener = function () {
+    ValidateInput.prototype.initListeners = function () {
         var _this = this;
-        var formElement = this.domManager.getForm();
-        if (formElement === null) {
-            return;
+        var validateOnEvents = this.inputDomManager.getValidateOnEvents();
+        for (var i = 0; i < validateOnEvents.length; i++) {
+            this.inputDomManager.registerListener(validateOnEvents[i], function () { return _this.registerChain(); });
         }
-        formElement.addEventListener("submit", function (event) { return _this.onFormSubmit(event); });
     };
-    Validator.prototype.initInputsListeners = function () {
+    ValidateInput.prototype.registerChain = function () {
         var _this = this;
-        var inputElements = this.domManager.getInputs();
-        if (inputElements.length === 0) {
-            return;
-        }
-        for (var i = 0; i < inputElements.length; i++) {
-            var htmlInputElement = inputElements[i];
-            var validateOnAttributeValue = dom_manager_1.DomManager.getAttributeValue(htmlInputElement, 'validate-on');
-            var validateOnArray = validateOnAttributeValue ? validateOnAttributeValue.split('|') : [];
-            var validateOnEvents = validateOnArray.length > 0 ? validateOnArray : ['change'];
-            for (var i_1 = 0; i_1 < validateOnEvents.length; i_1++) {
-                htmlInputElement.addEventListener(validateOnEvents[i_1], function (event) {
-                    _this.validateInput(event.target);
-                });
-            }
-        }
+        async_1.Async.parallel(this.rules.extractCallbackChain()).subscribe(function (responses) {
+            _this.message.show(responses);
+        });
     };
-    Validator.prototype.validateInput = function (element) {
-        var rules = new manager_1.RulesManager(element); //todo Rules manager
-        var rulesChain = rules.extractCallbackChain();
-        async_1.Async.parallel(rulesChain).subscribe(function (responses) { return new message_1.Message(responses, element); });
-    };
-    Validator.prototype.onFormSubmit = function (event) {
-    };
-    Validator.importRules = function () {
-    };
-    return Validator;
+    return ValidateInput;
 }());
-exports.Validator = Validator;
-window["Validator"] = Validator;
+exports.ValidateInput = ValidateInput;
 
 
 /***/ }),
-/* 10 */
+/* 12 */
+/***/ (function(module, exports) {
+
+
+
+/***/ }),
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(0);
 __webpack_require__(1);
-__webpack_require__(5);
+__webpack_require__(2);
 __webpack_require__(8);
+__webpack_require__(12);
+__webpack_require__(9);
+__webpack_require__(10);
+__webpack_require__(4);
+__webpack_require__(3);
+__webpack_require__(5);
+__webpack_require__(0);
 __webpack_require__(6);
 __webpack_require__(7);
-__webpack_require__(2);
-__webpack_require__(3);
-__webpack_require__(9);
-module.exports = __webpack_require__(4);
+module.exports = __webpack_require__(11);
 
 
 /***/ })

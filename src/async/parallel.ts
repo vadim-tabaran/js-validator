@@ -26,16 +26,20 @@ export class Parallel {
     this.endCallback = callback;
 
     for (let i = 0; i < this.ruleStack.length; i++) {
-      this.ruleStack[i].execute((validatorResponse) => {
-        this.appendResponse(validatorResponse);
+      this.ruleStack[i].execute((validatorResponse, parameters) => {
+        this.appendResponse(validatorResponse, parameters, this.ruleStack[i]);
       });
     }
 
     return this;
   }
 
-  appendResponse(validatorResponse) {
-    this.results.push(new Response(validatorResponse));
+  appendResponse(validatorResponse, parameters, rule) {
+    this.results.push({
+      validatorResponse: validatorResponse,
+      parameters: parameters,
+      rule: rule,
+    });
 
     if (this.results.length === this.ruleStack.length) {
       this.endCallback(this.results);

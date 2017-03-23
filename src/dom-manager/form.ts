@@ -1,6 +1,6 @@
-import { ErrorHandler } from "./error";
+import {ErrorHandler} from "../error";
 
-export class DomManager{
+export class FormDomManager{
   private formElement: HTMLFormElement | null = null;
   private inputs: HTMLInputElement[] = [];
   private target: Element | string = '';
@@ -51,9 +51,5 @@ export class DomManager{
         this.inputs.push(<HTMLInputElement>this.formElement.elements[inputName]);
       }
     }
-  }
-
-  static getAttributeValue(element: Element, attributeKey: string) {
-    return element.getAttribute(attributeKey);
   }
 }

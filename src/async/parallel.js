@@ -19,15 +19,23 @@ var Parallel = (function () {
     Parallel.prototype.subscribe = function (callback) {
         var _this = this;
         this.endCallback = callback;
-        for (var i = 0; i < this.ruleStack.length; i++) {
-            this.ruleStack[i].execute(function (validatorResponse) {
-                _this.appendResponse(validatorResponse);
+        var _loop_1 = function (i) {
+            this_1.ruleStack[i].execute(function (validatorResponse, parameters) {
+                _this.appendResponse(validatorResponse, parameters, _this.ruleStack[i]);
             });
+        };
+        var this_1 = this;
+        for (var i = 0; i < this.ruleStack.length; i++) {
+            _loop_1(i);
         }
         return this;
     };
-    Parallel.prototype.appendResponse = function (validatorResponse) {
-        this.results.push(new Response(validatorResponse));
+    Parallel.prototype.appendResponse = function (validatorResponse, parameters, rule) {
+        this.results.push({
+            validatorResponse: validatorResponse,
+            parameters: parameters,
+            rule: rule,
+        });
         if (this.results.length === this.ruleStack.length) {
             this.endCallback(this.results);
         }
