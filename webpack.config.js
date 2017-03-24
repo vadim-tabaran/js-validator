@@ -6,13 +6,16 @@ module.exports = {
         './src/rules/interface',
         './src/rules/manager',
         './src/rules/rule',
-        './src/dom-manager',
+        './src/dom-manager/input',
+        './src/dom-manager/form',
         './src/error',
         './src/validator',
-        './src/message'
+        './src/message/message',
+        './src/message/template',
+        './src/validate-input'
     ],
     output: {
-        filename: './dist/validator.dist.js'
+        filename: './dist/validator.js'
     },
     resolve: {
         // Add `.ts` and `.tsx` as a resolvable extension.

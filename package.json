@@ -1,0 +1,25 @@
+{
+  "name": "validator.loc",
+  "version": "1.0.0",
+  "description": "JavaScript Validator",
+  "main": "webpack.config.js",
+  "dependencies": {
+    "ts-loader": "^2.0.2",
+    "typescript": "^2.2.1",
+    "webpack": "^2.2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vadik4646/js-validator.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vadik4646/js-validator/issues"
+  },
+  "homepage": "https://github.com/vadik4646/js-validator#readme"
+}

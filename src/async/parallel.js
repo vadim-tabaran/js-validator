@@ -9,25 +9,18 @@ var Parallel = (function () {
         }
         this.ruleStack = this.ruleStack.concat(callbacks);
     }
-    Parallel.prototype.appendChain = function (callbacks) {
-        if (!Array.isArray(callbacks)) {
-            callbacks = [callbacks];
-        }
-        this.ruleStack = this.ruleStack.concat(callbacks);
-        return this;
-    };
     Parallel.prototype.subscribe = function (callback) {
         var _this = this;
         this.endCallback = callback;
         for (var i = 0; i < this.ruleStack.length; i++) {
-            this.ruleStack[i].execute(function (validatorResponse) {
+            this.ruleStack[i](function (validatorResponse) {
                 _this.appendResponse(validatorResponse);
             });
         }
         return this;
     };
     Parallel.prototype.appendResponse = function (validatorResponse) {
-        this.results.push(new Response(validatorResponse));
+        this.results.push(validatorResponse);
         if (this.results.length === this.ruleStack.length) {
             this.endCallback(this.results);
         }

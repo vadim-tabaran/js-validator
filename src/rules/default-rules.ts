@@ -1,11 +1,10 @@
 
-export let rules = {
-  required: {
-    selector: 'required',
+export let rules = [
+  {
     name: 'required',
     validate: function(next) {
-      next('hello world');
+      next('Hi i am %user.name%. I am %user.age% old!');
     },
     message: 'Field '
   }
-};
+];

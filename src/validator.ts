@@ -1,14 +1,17 @@
-import { DomManager } from "./dom-manager";
-import { RulesManager } from "./rules/manager";
-import { Async } from "./async/async";
-import { Message } from "./message";
+import { ValidateInput } from "./validate-input";
+import { FormDomManager } from "./dom-manager/form";
 
 export class Validator {
-  private domManager: DomManager;
+  static preFix = 'v-';
+  static ruleSeparator = '|';
+  static messagePreFix = '-message';
+  static customValidateResponseMethodName = 'validate';
+
+  private formDomManager: FormDomManager;
 
   constructor(target: Element | string, config = {}) { // todo config import
-    this.domManager = new DomManager(target);
-    this.domManager.setElements();
+    this.formDomManager = new FormDomManager(target);
+    this.formDomManager.setElements();
     this.initValidator();
   }
 
@@ -22,7 +25,7 @@ export class Validator {
   }
 
   private initFormListener() {
-    let formElement = this.domManager.getForm();
+    let formElement = this.formDomManager.getForm();
     if (formElement === null) {
       return;
     }
@@ -31,38 +34,15 @@ export class Validator {
   }
 
   private initInputsListeners() {
-    let inputElements = this.domManager.getInputs();
+    let inputElements = this.formDomManager.getInputs();
     if (inputElements.length === 0) {
       return;
     }
 
     for (let i = 0; i < inputElements.length; i++) {
-      let htmlInputElement = inputElements[i];
-      let validateOnAttributeValue = DomManager.getAttributeValue(htmlInputElement, 'validate-on');
-      let validateOnArray = validateOnAttributeValue ? validateOnAttributeValue.split('|') : [];
-      let validateOnEvents = validateOnArray.length > 0 ? validateOnArray : ['change'];
-
-      for(let i = 0; i < validateOnEvents.length; i++) {
-        htmlInputElement.addEventListener(
-          validateOnEvents[i],
-          (event) => {
-            this.validateInput(<HTMLInputElement>event.target)
-          }
-        );
-      }
+      new ValidateInput(inputElements[i]);
     }
   }
-
-  private validateInput(element: HTMLInputElement) {
-    let rules = new RulesManager(element); //todo Rules manager
-    let rulesChain = rules.extractCallbackChain();
-
-    Async.parallel(rulesChain).subscribe(
-      (responses: any[]) => new Message(responses, element)
-    );
-  }
-
-
 
   private onFormSubmit(event: Event) { // todo On Form Submit
 

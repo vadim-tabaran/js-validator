@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var error_1 = require("./error");
-var DomManager = (function () {
-    function DomManager(target) {
+var error_1 = require("../error");
+var FormDomManager = (function () {
+    function FormDomManager(target) {
         this.formElement = null;
         this.inputs = [];
         this.target = '';
         this.target = target;
     }
-    DomManager.prototype.setElements = function () {
+    FormDomManager.prototype.setElements = function () {
         if (typeof this.target === 'string') {
             var targetElement = document.querySelector(this.target);
             if (targetElement instanceof HTMLFormElement) {
@@ -30,13 +30,13 @@ var DomManager = (function () {
         }
         return new error_1.ErrorHandler('invalidTarget', { 'target': this.target });
     };
-    DomManager.prototype.getForm = function () {
+    FormDomManager.prototype.getForm = function () {
         return this.formElement;
     };
-    DomManager.prototype.getInputs = function () {
+    FormDomManager.prototype.getInputs = function () {
         return this.inputs;
     };
-    DomManager.prototype.actualizeFormInputs = function () {
+    FormDomManager.prototype.actualizeFormInputs = function () {
         if (this.formElement === null) {
             return;
         }
@@ -47,9 +47,6 @@ var DomManager = (function () {
             }
         }
     };
-    DomManager.getAttributeValue = function (element, attributeKey) {
-        return element.getAttribute(attributeKey);
-    };
-    return DomManager;
+    return FormDomManager;
 }());
-exports.DomManager = DomManager;
+exports.FormDomManager = FormDomManager;
