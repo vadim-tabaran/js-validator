@@ -39,6 +39,8 @@ var Validator = (function () {
     return Validator;
 }());
 Validator.preFix = 'v-';
-Validator.rulesSeparator = '|';
+Validator.ruleSeparator = '|';
+Validator.messagePreFix = '-message';
+Validator.customValidateResponseMethodName = 'validate';
 exports.Validator = Validator;
 window["Validator"] = Validator;

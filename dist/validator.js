@@ -73,7 +73,7 @@
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var validate_input_1 = __webpack_require__(11);
+var validate_input_1 = __webpack_require__(10);
 var form_1 = __webpack_require__(3);
 var Validator = (function () {
     function Validator(target, config) {
@@ -112,7 +112,9 @@ var Validator = (function () {
     return Validator;
 }());
 Validator.preFix = 'v-';
-Validator.rulesSeparator = '|';
+Validator.ruleSeparator = '|';
+Validator.messagePreFix = '-message';
+Validator.customValidateResponseMethodName = 'validate';
 exports.Validator = Validator;
 window["Validator"] = Validator;
 
@@ -152,33 +154,18 @@ var Parallel = (function () {
         }
         this.ruleStack = this.ruleStack.concat(callbacks);
     }
-    Parallel.prototype.appendChain = function (callbacks) {
-        if (!Array.isArray(callbacks)) {
-            callbacks = [callbacks];
-        }
-        this.ruleStack = this.ruleStack.concat(callbacks);
-        return this;
-    };
     Parallel.prototype.subscribe = function (callback) {
         var _this = this;
         this.endCallback = callback;
-        var _loop_1 = function (i) {
-            this_1.ruleStack[i].execute(function (validatorResponse, parameters) {
-                _this.appendResponse(validatorResponse, parameters, _this.ruleStack[i]);
-            });
-        };
-        var this_1 = this;
         for (var i = 0; i < this.ruleStack.length; i++) {
-            _loop_1(i);
+            this.ruleStack[i](function (validatorResponse) {
+                _this.appendResponse(validatorResponse);
+            });
         }
         return this;
     };
-    Parallel.prototype.appendResponse = function (validatorResponse, parameters, rule) {
-        this.results.push({
-            validatorResponse: validatorResponse,
-            parameters: parameters,
-            rule: rule,
-        });
+    Parallel.prototype.appendResponse = function (validatorResponse) {
+        this.results.push(validatorResponse);
         if (this.results.length === this.ruleStack.length) {
             this.endCallback(this.results);
         }
@@ -297,8 +284,11 @@ var ErrorHandler = (function () {
         this.errorMessages = {
             invalidSelector: "Can't find HTMLFormElement or HTMLInputElement on %selector% selector",
             invalidTarget: "Can't find HTMLFormElement or HTMLInputElement on %target% target",
+            featureComing: "Feature '%featureDescription%' is coming but it is have no that functionality!",
+            invalidExpression: "Can't execute expression '%expression%'. Details: %details%",
             invalidErrorKey: "Invalid error key '%errorKey%'"
         };
+        console.error(this.getMessage());
     }
     ErrorHandler.throw = function (key, params) {
         if (key === void 0) { key = ''; }
@@ -333,29 +323,15 @@ var Message = (function () {
     function Message(inputDomManager) {
         this.inputDomManager = inputDomManager;
     }
-    Message.prototype.show = function (responses) {
+    Message.prototype.show = function (validatorResponses) {
         var messages = [];
-        for (var i = 0; i < responses.length; i++) {
-            messages.push(this.get(responses[i]));
+        for (var i = 0; i < validatorResponses.length; i++) {
+            messages.push(this.get(validatorResponses[i]));
         }
     };
     Message.prototype.get = function (response) {
-        if (response === true) {
-            return false;
-        }
-        if (typeof response === 'string') {
-            var template = new template_1.Template(response, this.prepareTemplateParameters());
-            return template.extractMessage();
-        }
-        if (response === false) {
-            return 'response - false';
-        }
-    };
-    Message.prototype.prepareTemplateParameters = function () {
-        return {
-            attr: this.inputDomManager.getInput().attributes,
-            params: []
-        };
+        var template = new template_1.Template(response);
+        return template.extractMessage();
     };
     return Message;
 }());
@@ -369,18 +345,67 @@ exports.Message = Message;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var validator_1 = __webpack_require__(0);
+var error_1 = __webpack_require__(5);
 var Template = (function () {
-    function Template(message, parameters) {
-        this.message = message;
-        this.parameters = parameters;
+    function Template(templateConfig) {
+        this.rule = templateConfig.rule;
+        this.inputParameters = templateConfig.inputParameters;
+        this.inputDomManager = templateConfig.inputDomManager;
+        this.validatorResponse = templateConfig.validatorResponse;
     }
     Template.prototype.extractMessage = function () {
-        var params = this.parseParams();
-        return 'This is extracted message';
+        var messageTemplate = this.getMessageTemplate();
+        if (typeof messageTemplate !== 'string') {
+            return error_1.ErrorHandler.throw('featureComing', {
+                featureDescription: 'Response from validator should be a template string message'
+            });
+        }
+        var params = this.parseTemplateParams(messageTemplate);
+        var message = this.validatorResponse;
+        this.virtualVariableSpace.apply(null, [
+            params,
+            this.inputParameters,
+            this.inputDomManager.getInput().attributes
+        ]).forEach(function (value, index) {
+            message = message.replace(params[index], value);
+        });
+        return message;
     };
-    Template.prototype.parseParams = function () {
-        var unpreparedParameters = this.message.match(/%.*?%/g);
-        return [];
+    Template.prototype.parseTemplateParams = function (params) {
+        return params.match(/%.*?%/g).map(function (value) { return value.replace(/%/g, ''); });
+    };
+    Template.prototype.virtualVariableSpace = function (templateParams, params, attributes) {
+        var result = [];
+        for (var i = 0; i < templateParams.length; i++) {
+            try {
+                result.push(eval(templateParams[i])); // todo create a parser for it. Eval is evil!
+            }
+            catch (e) {
+                error_1.ErrorHandler.throw('invalidExpression', { expression: templateParams[i], details: e });
+            }
+        }
+        return result;
+    };
+    Template.prototype.getMessageTemplate = function () {
+        if (this.inputDomManager.hasAttribute(validator_1.Validator.messagePreFix + this.rule.name)) {
+            return this.inputDomManager.getAttribute(validator_1.Validator.messagePreFix + this.rule.name);
+        }
+        if (this.validatorResponse instanceof Function) {
+            return this.validatorResponse();
+        }
+        if (this.validatorResponse instanceof Object &&
+            this.validatorResponse.hasOwnProperty(validator_1.Validator.customValidateResponseMethodName) &&
+            this.validatorResponse[validator_1.Validator.customValidateResponseMethodName] instanceof Function) {
+            return this.validatorResponse[validator_1.Validator.customValidateResponseMethodName];
+        }
+        if (typeof this.validatorResponse === 'string') {
+            return this.validatorResponse;
+        }
+        if (this.validatorResponse === false) {
+            return this.rule.message;
+        }
+        return false;
     };
     return Template;
 }());
@@ -413,10 +438,8 @@ exports.rules = [
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var default_rules_1 = __webpack_require__(8);
-var rule_1 = __webpack_require__(10);
 var RulesManager = (function () {
-    function RulesManager(inputDomManager) {
-        this.inputDomManager = inputDomManager;
+    function RulesManager() {
     }
     RulesManager.appendRules = function (customRules) {
         var _loop_1 = function (i) {
@@ -426,17 +449,6 @@ var RulesManager = (function () {
             _loop_1(i);
         }
     };
-    RulesManager.prototype.extractCallbackChain = function () {
-        var callbackChain = [];
-        for (var i = 0; i < RulesManager.rules.length; i++) {
-            var attributeName = RulesManager.rules[i].name;
-            if (this.inputDomManager.hasAttribute(attributeName)) {
-                callbackChain.push(new rule_1.ValidationRule(RulesManager.rules[i], this.inputDomManager));
-            }
-        }
-        return callbackChain;
-    };
-    RulesManager.prototype.get = function (key) { };
     return RulesManager;
 }());
 RulesManager.rules = default_rules_1.rules;
@@ -445,6 +457,82 @@ exports.RulesManager = RulesManager;
 
 /***/ }),
 /* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var manager_1 = __webpack_require__(9);
+var async_1 = __webpack_require__(1);
+var message_1 = __webpack_require__(6);
+var input_1 = __webpack_require__(4);
+var validator_1 = __webpack_require__(0);
+var ValidateInput = (function () {
+    function ValidateInput(input) {
+        this.inputDomManager = new input_1.InputDomManager(input);
+        this.message = new message_1.Message(this.inputDomManager);
+        this.initListeners();
+    }
+    ValidateInput.prototype.initListeners = function () {
+        var _this = this;
+        var validateOnEvents = this.inputDomManager.getValidateOnEvents();
+        for (var i = 0; i < validateOnEvents.length; i++) {
+            this.inputDomManager.registerListener(validateOnEvents[i], function () { return _this.registerChain(); });
+        }
+    };
+    ValidateInput.prototype.registerChain = function () {
+        var _this = this;
+        async_1.Async.parallel(this.extractCallbackChain()).subscribe(function (responses) {
+            _this.message.show(responses);
+        });
+    };
+    ValidateInput.prototype.extractCallbackChain = function () {
+        var callbackChain = [];
+        for (var i = 0; i < manager_1.RulesManager.rules.length; i++) {
+            var attributeName = manager_1.RulesManager.rules[i].name;
+            if (this.inputDomManager.hasAttribute(attributeName)) {
+                callbackChain.push(this.prepareRuleCallback(manager_1.RulesManager.rules[i]));
+            }
+        }
+        return callbackChain;
+    };
+    ValidateInput.prototype.prepareRuleCallback = function (rule) {
+        var _this = this;
+        return function (appendResponseCallback) {
+            var inputParameters = _this.extractParameters(rule);
+            var validatorParameters = [
+                function (validatorResponse) {
+                    appendResponseCallback({
+                        validatorResponse: validatorResponse,
+                        inputParameters: inputParameters,
+                        inputDomManager: _this.inputDomManager,
+                        rule: rule
+                    });
+                }
+            ].concat(inputParameters);
+            rule.validate.apply(_this.inputDomManager.getInput(), validatorParameters);
+        };
+    };
+    ValidateInput.prototype.extractParameters = function (rule) {
+        var attributeValue = this.inputDomManager.getAttribute(rule.name);
+        if (attributeValue === false) {
+            return [];
+        }
+        return attributeValue.split(this.inputDomManager.getAttribute('rule-separator') || validator_1.Validator.ruleSeparator);
+    };
+    return ValidateInput;
+}());
+exports.ValidateInput = ValidateInput;
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports) {
+
+
+
+/***/ }),
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -471,53 +559,11 @@ var ValidationRule = (function () {
         if (attributeValue === false) {
             return [];
         }
-        return attributeValue.split(this.inputDomManager.getAttribute('rule-separator') || validator_1.Validator.rulesSeparator);
+        return attributeValue.split(this.inputDomManager.getAttribute('rule-separator') || validator_1.Validator.ruleSeparator);
     };
     return ValidationRule;
 }());
 exports.ValidationRule = ValidationRule;
-
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var manager_1 = __webpack_require__(9);
-var async_1 = __webpack_require__(1);
-var message_1 = __webpack_require__(6);
-var input_1 = __webpack_require__(4);
-var ValidateInput = (function () {
-    function ValidateInput(input) {
-        this.inputDomManager = new input_1.InputDomManager(input);
-        this.rules = new manager_1.RulesManager(this.inputDomManager); //todo Rules manager
-        this.message = new message_1.Message(this.inputDomManager);
-        this.initListeners();
-    }
-    ValidateInput.prototype.initListeners = function () {
-        var _this = this;
-        var validateOnEvents = this.inputDomManager.getValidateOnEvents();
-        for (var i = 0; i < validateOnEvents.length; i++) {
-            this.inputDomManager.registerListener(validateOnEvents[i], function () { return _this.registerChain(); });
-        }
-    };
-    ValidateInput.prototype.registerChain = function () {
-        var _this = this;
-        async_1.Async.parallel(this.rules.extractCallbackChain()).subscribe(function (responses) {
-            _this.message.show(responses);
-        });
-    };
-    return ValidateInput;
-}());
-exports.ValidateInput = ValidateInput;
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports) {
-
 
 
 /***/ }),
@@ -527,16 +573,16 @@ exports.ValidateInput = ValidateInput;
 __webpack_require__(1);
 __webpack_require__(2);
 __webpack_require__(8);
-__webpack_require__(12);
+__webpack_require__(11);
 __webpack_require__(9);
-__webpack_require__(10);
+__webpack_require__(12);
 __webpack_require__(4);
 __webpack_require__(3);
 __webpack_require__(5);
 __webpack_require__(0);
 __webpack_require__(6);
 __webpack_require__(7);
-module.exports = __webpack_require__(11);
+module.exports = __webpack_require__(10);
 
 
 /***/ })

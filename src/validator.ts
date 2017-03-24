@@ -1,9 +1,11 @@
 import { ValidateInput } from "./validate-input";
-import {FormDomManager} from "./dom-manager/form";
+import { FormDomManager } from "./dom-manager/form";
 
 export class Validator {
   static preFix = 'v-';
-  static rulesSeparator = '|';
+  static ruleSeparator = '|';
+  static messagePreFix = '-message';
+  static customValidateResponseMethodName = 'validate';
 
   private formDomManager: FormDomManager;
 

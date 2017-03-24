@@ -29,7 +29,7 @@ export class ValidationRule {
       return [];
     }
     return attributeValue.split(
-      this.inputDomManager.getAttribute('rule-separator') || Validator.rulesSeparator
+      this.inputDomManager.getAttribute('rule-separator') || Validator.ruleSeparator
     );
   }
 }

@@ -21,7 +21,7 @@ var ValidationRule = (function () {
         if (attributeValue === false) {
             return [];
         }
-        return attributeValue.split(this.inputDomManager.getAttribute('rule-separator') || validator_1.Validator.rulesSeparator);
+        return attributeValue.split(this.inputDomManager.getAttribute('rule-separator') || validator_1.Validator.ruleSeparator);
     };
     return ValidationRule;
 }());

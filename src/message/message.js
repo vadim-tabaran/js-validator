@@ -5,29 +5,15 @@ var Message = (function () {
     function Message(inputDomManager) {
         this.inputDomManager = inputDomManager;
     }
-    Message.prototype.show = function (responses) {
+    Message.prototype.show = function (validatorResponses) {
         var messages = [];
-        for (var i = 0; i < responses.length; i++) {
-            messages.push(this.get(responses[i]));
+        for (var i = 0; i < validatorResponses.length; i++) {
+            messages.push(this.get(validatorResponses[i]));
         }
     };
     Message.prototype.get = function (response) {
-        if (response === true) {
-            return false;
-        }
-        if (typeof response === 'string') {
-            var template = new template_1.Template(response, this.prepareTemplateParameters());
-            return template.extractMessage();
-        }
-        if (response === false) {
-            return 'response - false';
-        }
-    };
-    Message.prototype.prepareTemplateParameters = function () {
-        return {
-            attr: this.inputDomManager.getInput().attributes,
-            params: []
-        };
+        var template = new template_1.Template(response);
+        return template.extractMessage();
     };
     return Message;
 }());

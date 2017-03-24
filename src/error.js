@@ -7,8 +7,11 @@ var ErrorHandler = (function () {
         this.errorMessages = {
             invalidSelector: "Can't find HTMLFormElement or HTMLInputElement on %selector% selector",
             invalidTarget: "Can't find HTMLFormElement or HTMLInputElement on %target% target",
+            featureComing: "Feature '%featureDescription%' is coming but it is have no that functionality!",
+            invalidExpression: "Can't execute expression '%expression%'. Details: %details%",
             invalidErrorKey: "Invalid error key '%errorKey%'"
         };
+        console.error(this.getMessage());
     }
     ErrorHandler.throw = function (key, params) {
         if (key === void 0) { key = ''; }

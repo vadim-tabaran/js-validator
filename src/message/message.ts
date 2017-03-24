@@ -1,37 +1,20 @@
-import {Template} from "./template";
-import {InputDomManager} from "../dom-manager/input";
+import { Template } from "./template";
+import { InputDomManager } from "../dom-manager/input";
 
 export class Message{
   constructor(
     private inputDomManager: InputDomManager
   ) {}
 
-  show(responses) {
+  show(validatorResponses) {
     let messages = [];
-    for(let i = 0; i < responses.length; i++) {
-      messages.push(this.get(responses[i]));
+    for(let i = 0; i < validatorResponses.length; i++) {
+      messages.push(this.get(validatorResponses[i]));
     }
   }
 
   private get(response) {
-    if (response === true) {
-      return false;
-    }
-
-    if (typeof response === 'string') {
-      let template = new Template(response, this.prepareTemplateParameters());
-      return template.extractMessage();
-    }
-
-    if (response === false) { //todo if false
-      return 'response - false';
-    }
-  }
-
-  private prepareTemplateParameters() {
-    return {
-      attr: this.inputDomManager.getInput().attributes,
-      params: []
-    };
+    let template = new Template(response);
+    return template.extractMessage();
   }
 }
