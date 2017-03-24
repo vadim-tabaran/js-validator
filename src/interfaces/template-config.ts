@@ -1,4 +1,4 @@
-import {InputDomManager} from "../dom-manager/input";
+import { InputDomManager } from "../dom-manager/input";
 
 export interface TemplateConfig {
   validatorResponse: any,

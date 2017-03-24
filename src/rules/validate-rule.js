@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var validator_1 = require("../validator");
-var ValidationRule = (function () {
-    function ValidationRule(rule, inputDomManager) {
+var ValidateRule = (function () {
+    function ValidateRule(rule, inputDomManager) {
         this.rule = rule;
         this.inputDomManager = inputDomManager;
     }
-    ValidationRule.prototype.execute = function (appendResponseCallback) {
+    ValidateRule.prototype.execute = function (appendResponseCallback) {
         var inputParameters = this.extractParameters();
         var validatorParameters = [
             function (validatorResponse) {
@@ -16,13 +16,13 @@ var ValidationRule = (function () {
         this.rule.validate.apply(this.inputDomManager.getInput(), validatorParameters);
         return this;
     };
-    ValidationRule.prototype.extractParameters = function () {
+    ValidateRule.prototype.extractParameters = function () {
         var attributeValue = this.inputDomManager.getAttribute(this.rule.name);
         if (attributeValue === false) {
             return [];
         }
         return attributeValue.split(this.inputDomManager.getAttribute('rule-separator') || validator_1.Validator.ruleSeparator);
     };
-    return ValidationRule;
+    return ValidateRule;
 }());
-exports.ValidationRule = ValidationRule;
+exports.ValidateRule = ValidateRule;

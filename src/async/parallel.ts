@@ -1,11 +1,11 @@
-import {ValidationRule} from "../rules/rule";
+import {ValidateRule} from "../rules/validate-rule";
 
 export class Parallel {
   private results: any[] = [];
   private ruleStack = [];
   private endCallback;
 
-  constructor(callbacks:ValidationRule[] | ValidationRule) {
+  constructor(callbacks:ValidateRule[] | ValidateRule) {
     if (!Array.isArray(callbacks)) {
       callbacks = [callbacks];
     }

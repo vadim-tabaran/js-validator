@@ -1,7 +1,7 @@
 import { InputDomManager } from "../dom-manager/input";
 import { Validator } from "../validator";
 
-export class ValidationRule {
+export class ValidateRule {
   constructor(
     private rule: Rule,
     private inputDomManager: InputDomManager

@@ -8,5 +8,4 @@ export class RulesManager {
       RulesManager.rules.filter((rule) => rule.name != customRules[i].name);
     }
   }
-
 }
