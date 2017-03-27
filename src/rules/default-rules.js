@@ -4,7 +4,7 @@ exports.rules = [
     {
         name: 'required',
         validate: function (next) {
-            next('Hi i am %user.name%. I am %user.age% old!');
+            next('Hi i am %window.location.href%');
         },
         message: 'Field '
     }

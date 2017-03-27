@@ -34,14 +34,14 @@ export class Template {
       this.inputParameters,
       this.inputDomManager.getInput().attributes
     ]).forEach((value, index) => {
-      message = message.replace(params[index], value);
+      message = message.replace('%' + params[index] + '%', value);
     });
 
     return message;
   }
 
   private parseTemplateParams(params) {
-    return params.match(/%.*?%/g).map((value) => value.replace(/%/g, ''));
+    return params.match(/%.*?%/g).map((value) => value.replace(/^%|%$/g, ''));
   }
 
   private virtualVariableSpace(templateParams, params, attributes) {
