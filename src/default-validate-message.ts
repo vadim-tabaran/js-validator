@@ -28,10 +28,7 @@ export class DefaultValidatorView implements MessagesView {
   }
 
   private addCloseListener() {
-    this.messageContainer.addEventListener('click', (event) => {
-      let divElement = <HTMLDivElement>event.target;
-      divElement.parentElement.removeChild(divElement);
-    });
+    this.messageContainer.addEventListener('click', () => this.destroy());
   }
 
   private createMessageContainer(elementPositions) {
