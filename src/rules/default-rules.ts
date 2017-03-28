@@ -2,9 +2,9 @@
 export let rules = [
   {
     name: 'required',
-    validate: function(next) {
-      next('Hi i am %window.location.href%');
+    validate: function(next, value) {
+      next(!!value);
     },
-    message: 'Field '
+    message: 'Field %attributes["v-name"]% is required'
   }
 ];

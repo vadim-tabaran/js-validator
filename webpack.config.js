@@ -11,7 +11,8 @@ module.exports = {
         './src/validator',
         './src/message/message',
         './src/message/template',
-        './src/validate-input'
+        './src/validate-input',
+        './src/validate-input-group'
     ],
     output: {
         filename: './dist/validator.js'

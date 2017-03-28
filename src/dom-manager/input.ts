@@ -1,10 +1,7 @@
-import { Validator } from "../validator";
-export class InputDomManager {
-  private input: HTMLInputElement;
+import {ElementDomManager} from "./element";
 
-  constructor(input: HTMLInputElement) {
-    this.input = input;
-  }
+export class InputDomManager {
+  constructor(private input: HTMLInputElement) {}
 
   getInput() {
     return this.input;
@@ -20,13 +17,23 @@ export class InputDomManager {
   }
 
   hasAttribute(attrKey: string) {
-    return this.input.hasAttribute(Validator.preFix + attrKey);
+    return ElementDomManager.hasAttribute(this.input, attrKey);
   }
 
   getAttribute(attrKey: string) {
-    if (!this.hasAttribute(attrKey)) {
-      return false;
+    return ElementDomManager.getAttribute(this.input, attrKey);
+  }
+
+  getValue() {
+    if (this.input instanceof HTMLSelectElement) {
+      return this.input.options[this.input.selectedIndex].nodeValue;
     }
-    return this.input.getAttribute(Validator.preFix + attrKey);
+
+    if (['radio', 'checkbox'].indexOf(this.input.getAttribute('type')) !== -1) {
+      let checkedInput = <HTMLInputElement | null>document.querySelector('input[name="' + this.input.name + '"]:checked');
+      return checkedInput ? checkedInput.value : false;
+    }
+
+    return this.input.value;
   }
 }

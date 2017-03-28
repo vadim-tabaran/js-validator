@@ -17,7 +17,6 @@ export class DefaultValidatorView implements MessagesView {
     this.messageContainer = this.createMessageContainer(elementPositions);
     this.appendValidatorMessages(messages);
     this.addCloseListener();
-
   }
 
   destroy() {
