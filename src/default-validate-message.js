@@ -7,6 +7,7 @@ var DefaultValidatorView = (function () {
     DefaultValidatorView.prototype.show = function (messages) {
         this.currentInput = this.inputDomManager.getInput();
         var elementPositions = this.currentInput.getBoundingClientRect();
+        this.currentInput.parentElement.style.position = 'relative';
         this.messageContainer = this.createMessageContainer(elementPositions);
         this.appendValidatorMessages(messages);
         this.addCloseListener();
@@ -25,12 +26,8 @@ var DefaultValidatorView = (function () {
     };
     DefaultValidatorView.prototype.createMessageContainer = function (elementPositions) {
         var messageContainer = document.createElement("div");
-        messageContainer.style.position = 'absolute';
+        messageContainer.classList.add('validateMessage');
         messageContainer.style.top = elementPositions.top;
-        messageContainer.style.left = elementPositions.left;
-        messageContainer.style.backgroundColor = 'red';
-        messageContainer.style.maxWidth = '500px';
-        messageContainer.style.padding = '5px';
         return messageContainer;
     };
     return DefaultValidatorView;

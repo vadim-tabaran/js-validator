@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var validate_input_1 = require("./validate-input");
 var form_1 = require("./dom-manager/form");
+var validate_input_group_1 = require("./validate-input-group");
 var Validator = (function () {
     function Validator(target, config) {
         if (config === void 0) { config = {}; }
@@ -28,8 +28,15 @@ var Validator = (function () {
         if (inputElements.length === 0) {
             return;
         }
+        var groups = {};
         for (var i = 0; i < inputElements.length; i++) {
-            new validate_input_1.ValidateInput(inputElements[i]);
+            if (!groups.hasOwnProperty(inputElements[i].name)) {
+                groups[inputElements[i].name] = [];
+            }
+            groups[inputElements[i].name].push(inputElements[i]);
+        }
+        for (var groupName in groups) {
+            new validate_input_group_1.ValidateInputGroup(groups[groupName]);
         }
     };
     Validator.prototype.onFormSubmit = function (event) {
@@ -40,7 +47,8 @@ var Validator = (function () {
 }());
 Validator.preFix = 'v-';
 Validator.ruleSeparator = '|';
-Validator.messagePreFix = '-message';
+Validator.messagePostFix = '-message';
 Validator.customValidateResponseMethodName = 'validate';
+Validator.groupAttributeName = 'group';
 exports.Validator = Validator;
 window["Validator"] = Validator;
