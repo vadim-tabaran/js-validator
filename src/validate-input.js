@@ -5,12 +5,46 @@ var async_1 = require("./async/async");
 var message_1 = require("./message/message");
 var input_1 = require("./dom-manager/input");
 var validator_1 = require("./validator");
+var error_1 = require("./error");
+var element_1 = require("./dom-manager/element");
 var ValidateInput = (function () {
-    function ValidateInput(input) {
+    function ValidateInput(input, group) {
         this.inputDomManager = new input_1.InputDomManager(input);
         this.message = new message_1.Message(this.inputDomManager);
+        this.group = group;
         this.initListeners();
     }
+    ValidateInput.prototype.extractCallbackChain = function () {
+        var callbackChain = [];
+        var input = this.inputDomManager.getInput();
+        if (this.group.length() === 1) {
+            callbackChain = this.extractRulesFromAttributes(input);
+        }
+        else {
+            var groupContainer = this.getGroupContainer();
+            if (groupContainer === false) {
+                error_1.ErrorHandler.throw('invalidGroupContainer', { group: this.inputDomManager.getInput().name });
+                return [];
+            }
+            callbackChain = this.extractRulesFromAttributes(groupContainer);
+        }
+        return callbackChain;
+    };
+    ValidateInput.prototype.getGroupContainer = function () {
+        var currentNode = this.inputDomManager.getInput();
+        var groupName = currentNode.name;
+        while (element_1.ElementDomManager.hasParentNode(currentNode)) {
+            currentNode = element_1.ElementDomManager.getParentNode(currentNode);
+            if (this.isGroupContainer(currentNode, groupName)) {
+                return currentNode;
+            }
+        }
+        return false;
+    };
+    ValidateInput.prototype.isGroupContainer = function (node, groupName) {
+        return element_1.ElementDomManager.hasAttribute(node, validator_1.Validator.groupAttributeName) &&
+            element_1.ElementDomManager.getAttribute(node, validator_1.Validator.groupAttributeName) === groupName;
+    };
     ValidateInput.prototype.initListeners = function () {
         var _this = this;
         var validateOnEvents = this.inputDomManager.getValidateOnEvents();
@@ -24,11 +58,15 @@ var ValidateInput = (function () {
             _this.message.show(responses);
         });
     };
-    ValidateInput.prototype.extractCallbackChain = function () {
+    ValidateInput.prototype.extractRulesFromAttributes = function (element) {
+        if (element === false) {
+            error_1.ErrorHandler.throw('invalidGroupContainer', { group: this.inputDomManager.getInput().name });
+            return [];
+        }
         var callbackChain = [];
         for (var i = 0; i < manager_1.RulesManager.rules.length; i++) {
             var attributeName = manager_1.RulesManager.rules[i].name;
-            if (this.inputDomManager.hasAttribute(attributeName)) {
+            if (element_1.ElementDomManager.hasAttribute(element, attributeName)) {
                 callbackChain.push(this.prepareRuleCallback(manager_1.RulesManager.rules[i]));
             }
         }
@@ -46,7 +84,8 @@ var ValidateInput = (function () {
                         inputDomManager: _this.inputDomManager,
                         rule: rule
                     });
-                }
+                },
+                _this.inputDomManager.getValue()
             ].concat(inputParameters);
             rule.validate.apply(_this.inputDomManager.getInput(), validatorParameters);
         };

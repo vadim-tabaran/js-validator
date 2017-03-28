@@ -3,9 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.rules = [
     {
         name: 'required',
-        validate: function (next) {
-            next('Hi i am %user.name%. I am %user.age% old!');
+        validate: function (next, value) {
+            next(!!value);
         },
-        message: 'Field '
+        message: 'Field %attributes["v-name"]% is required'
     }
 ];

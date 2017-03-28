@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var validator_1 = require("../validator");
+var element_1 = require("./element");
 var InputDomManager = (function () {
     function InputDomManager(input) {
         this.input = input;
@@ -16,13 +16,20 @@ var InputDomManager = (function () {
         this.input.addEventListener(event, onEventCallback);
     };
     InputDomManager.prototype.hasAttribute = function (attrKey) {
-        return this.input.hasAttribute(validator_1.Validator.preFix + attrKey);
+        return element_1.ElementDomManager.hasAttribute(this.input, attrKey);
     };
     InputDomManager.prototype.getAttribute = function (attrKey) {
-        if (!this.hasAttribute(attrKey)) {
-            return false;
+        return element_1.ElementDomManager.getAttribute(this.input, attrKey);
+    };
+    InputDomManager.prototype.getValue = function () {
+        if (this.input instanceof HTMLSelectElement) {
+            return this.input.options[this.input.selectedIndex].nodeValue;
         }
-        return this.input.getAttribute(validator_1.Validator.preFix + attrKey);
+        if (['radio', 'checkbox'].indexOf(this.input.getAttribute('type')) !== -1) {
+            var checkedInput = document.querySelector('input[name="' + this.input.name + '"]:checked');
+            return checkedInput ? checkedInput.value : false;
+        }
+        return this.input.value;
     };
     return InputDomManager;
 }());

@@ -1,7 +1,7 @@
 import { InputDomManager } from "../dom-manager/input";
 import { TemplateConfig } from "../interfaces/template-config";
 import { Validator } from "../validator";
-import {ErrorHandler} from "../error";
+import { ErrorHandler } from "../error";
 
 export class Template {
   private rule: Rule;
@@ -20,28 +20,42 @@ export class Template {
 
   extractMessage() {
     let messageTemplate = this.getMessageTemplate();
-    if (typeof messageTemplate !== 'string') {
+
+    if (['string', 'boolean'].indexOf(typeof messageTemplate) === -1) {
       return ErrorHandler.throw('featureComing', {
-        featureDescription: 'Response from validator should be a template string message'
+        featureDescription: 'Response from validator should be a template string or boolean message'
       });
     }
 
-    let params = this.parseTemplateParams(messageTemplate);
-    let message = this.validatorResponse;
+    if (messageTemplate !== true) {
+      let params = this.parseTemplateParams(messageTemplate);
+      this.virtualVariableSpace.apply(null, [ // todo add shared source for every object and whole class
+        params,
+        this.inputParameters,
+        this.prepareAttributes()
+      ]).forEach((value, index) => {
+        messageTemplate = messageTemplate.replace('%' + params[index] + '%', value);
+      });
+    }
 
-    this.virtualVariableSpace.apply(null, [ // todo add shared source for every object and whole class
-      params,
-      this.inputParameters,
-      this.inputDomManager.getInput().attributes
-    ]).forEach((value, index) => {
-      message = message.replace(params[index], value);
-    });
+    return messageTemplate;
+  }
 
-    return message;
+  private prepareAttributes() {
+    let attributes = this.inputDomManager.getInput().attributes;
+    let attributesAssoc = {};
+    for (let i = 0; i < attributes.length; i++) {
+      attributesAssoc[attributes[i].name] = attributes[i].value;
+    }
+    return attributesAssoc;
   }
 
   private parseTemplateParams(params) {
-    return params.match(/%.*?%/g).map((value) => value.replace(/%/g, ''));
+    if (typeof params !== 'string') {
+      return [];
+    }
+    let paramsArray = params.match(/%.*?%/g) || [];
+    return paramsArray.map((value) => value.replace(/^%|%$/g, ''));
   }
 
   private virtualVariableSpace(templateParams, params, attributes) {
@@ -49,16 +63,16 @@ export class Template {
     for (let i = 0; i < templateParams.length; i++) {
       try {
         result.push(eval(templateParams[i])); // todo create a parser for it. Eval is evil!
-      } catch (e) {
-        ErrorHandler.throw('invalidExpression', {expression: templateParams[i], details: e});
+      } catch (message) {
+        ErrorHandler.throw('invalidExpression', {expression: templateParams[i], details: message});
       }
     }
     return result;
   }
 
   private getMessageTemplate() { // todo if returns false or async
-    if (this.inputDomManager.hasAttribute(Validator.messagePreFix + this.rule.name)) {
-      return this.inputDomManager.getAttribute(Validator.messagePreFix + this.rule.name);
+    if (this.inputDomManager.hasAttribute(this.rule.name + Validator.messagePostFix)) {
+      return this.inputDomManager.getAttribute(this.rule.name + Validator.messagePostFix);
     }
 
     if (this.validatorResponse instanceof Function) {
@@ -81,6 +95,6 @@ export class Template {
       return this.rule.message;
     }
 
-    return false;
+    return true;
   }
 }

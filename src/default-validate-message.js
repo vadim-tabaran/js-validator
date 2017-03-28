@@ -5,6 +5,7 @@ var DefaultValidatorView = (function () {
         this.inputDomManager = inputDomManager;
     }
     DefaultValidatorView.prototype.show = function (messages) {
+        console.log(messages);
     };
     DefaultValidatorView.prototype.destroy = function () {
     };

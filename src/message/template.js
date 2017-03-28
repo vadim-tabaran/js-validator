@@ -11,24 +11,37 @@ var Template = (function () {
     }
     Template.prototype.extractMessage = function () {
         var messageTemplate = this.getMessageTemplate();
-        if (typeof messageTemplate !== 'string') {
+        if (['string', 'boolean'].indexOf(typeof messageTemplate) === -1) {
             return error_1.ErrorHandler.throw('featureComing', {
-                featureDescription: 'Response from validator should be a template string message'
+                featureDescription: 'Response from validator should be a template string or boolean message'
             });
         }
-        var params = this.parseTemplateParams(messageTemplate);
-        var message = this.validatorResponse;
-        this.virtualVariableSpace.apply(null, [
-            params,
-            this.inputParameters,
-            this.inputDomManager.getInput().attributes
-        ]).forEach(function (value, index) {
-            message = message.replace(params[index], value);
-        });
-        return message;
+        if (messageTemplate !== true) {
+            var params_1 = this.parseTemplateParams(messageTemplate);
+            this.virtualVariableSpace.apply(null, [
+                params_1,
+                this.inputParameters,
+                this.prepareAttributes()
+            ]).forEach(function (value, index) {
+                messageTemplate = messageTemplate.replace('%' + params_1[index] + '%', value);
+            });
+        }
+        return messageTemplate;
+    };
+    Template.prototype.prepareAttributes = function () {
+        var attributes = this.inputDomManager.getInput().attributes;
+        var attributesAssoc = {};
+        for (var i = 0; i < attributes.length; i++) {
+            attributesAssoc[attributes[i].name] = attributes[i].value;
+        }
+        return attributesAssoc;
     };
     Template.prototype.parseTemplateParams = function (params) {
-        return params.match(/%.*?%/g).map(function (value) { return value.replace(/%/g, ''); });
+        if (typeof params !== 'string') {
+            return [];
+        }
+        var paramsArray = params.match(/%.*?%/g) || [];
+        return paramsArray.map(function (value) { return value.replace(/^%|%$/g, ''); });
     };
     Template.prototype.virtualVariableSpace = function (templateParams, params, attributes) {
         var result = [];
@@ -36,15 +49,15 @@ var Template = (function () {
             try {
                 result.push(eval(templateParams[i])); // todo create a parser for it. Eval is evil!
             }
-            catch (e) {
-                error_1.ErrorHandler.throw('invalidExpression', { expression: templateParams[i], details: e });
+            catch (message) {
+                error_1.ErrorHandler.throw('invalidExpression', { expression: templateParams[i], details: message });
             }
         }
         return result;
     };
     Template.prototype.getMessageTemplate = function () {
-        if (this.inputDomManager.hasAttribute(validator_1.Validator.messagePreFix + this.rule.name)) {
-            return this.inputDomManager.getAttribute(validator_1.Validator.messagePreFix + this.rule.name);
+        if (this.inputDomManager.hasAttribute(this.rule.name + validator_1.Validator.messagePostFix)) {
+            return this.inputDomManager.getAttribute(this.rule.name + validator_1.Validator.messagePostFix);
         }
         if (this.validatorResponse instanceof Function) {
             return this.validatorResponse();
@@ -60,7 +73,7 @@ var Template = (function () {
         if (this.validatorResponse === false) {
             return this.rule.message;
         }
-        return false;
+        return true;
     };
     return Template;
 }());

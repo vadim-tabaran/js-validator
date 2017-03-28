@@ -6,7 +6,7 @@ export class DefaultValidatorView implements MessagesView{
   ) {}
 
   show(messages: string[]) {
-
+    console.log(messages);
   }
 
   destroy() {

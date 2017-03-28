@@ -1,11 +1,12 @@
-import { ValidateInput } from "./validate-input";
 import { FormDomManager } from "./dom-manager/form";
+import { ValidateInputGroup } from "./validate-input-group";
 
 export class Validator {
   static preFix = 'v-';
   static ruleSeparator = '|';
-  static messagePreFix = '-message';
+  static messagePostFix = '-message';
   static customValidateResponseMethodName = 'validate';
+  static groupAttributeName = 'group';
 
   private formDomManager: FormDomManager;
 
@@ -39,8 +40,18 @@ export class Validator {
       return;
     }
 
+    let groups = {};
+
     for (let i = 0; i < inputElements.length; i++) {
-      new ValidateInput(inputElements[i]);
+      if (!groups.hasOwnProperty(inputElements[i].name)) {
+        groups[inputElements[i].name] = [];
+      }
+
+      groups[inputElements[i].name].push(inputElements[i]) ;
+    }
+
+    for (let groupName in groups) {
+      new ValidateInputGroup(groups[groupName]);
     }
   }
 

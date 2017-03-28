@@ -3,16 +3,15 @@ module.exports = {
         './src/async/async',
         './src/async/parallel',
         './src/rules/default-rules',
-        './src/rules/interface',
         './src/rules/manager',
-        './src/rules/rule',
         './src/dom-manager/input',
         './src/dom-manager/form',
         './src/error',
         './src/validator',
         './src/message/message',
         './src/message/template',
-        './src/validate-input'
+        './src/validate-input',
+        './src/validate-input-group'
     ],
     output: {
         filename: './dist/validator.js'

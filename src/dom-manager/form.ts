@@ -36,7 +36,7 @@ export class FormDomManager{
     return this.formElement;
   }
 
-  getInputs() {
+  getInputs(): HTMLInputElement[] {
     return this.inputs;
   }
 

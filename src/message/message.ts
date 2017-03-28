@@ -4,6 +4,7 @@ import { DefaultValidatorView } from "../default-validate-message";
 
 export class Message {
   private validatorView: MessagesView;
+
   constructor(
     private inputDomManager: InputDomManager
   ) {
@@ -19,12 +20,18 @@ export class Message {
   private getMessageList(validatorResponses) {
     let messages = [];
     for(let i = 0; i < validatorResponses.length; i++) {
-      messages.push(this.getMessage(validatorResponses[i]));
+      let currMessage = this.getMessage(validatorResponses[i]);
+      if (typeof currMessage === 'string') {
+        messages.push(currMessage);
+      }
     }
     return messages;
   }
 
   private getMessage(response) {
+    if (response.validatorResponse === true) {
+      return false;
+    }
     let template = new Template(response);
     return template.extractMessage();
   }

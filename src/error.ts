@@ -4,6 +4,7 @@ export class ErrorHandler{
     invalidTarget : "Can't find HTMLFormElement or HTMLInputElement on %target% target",
     featureComing : "Feature '%featureDescription%' is coming but it is have no that functionality!",
     invalidExpression: "Can't execute expression '%expression%'. Details: %details%",
+    invalidGroupContainer: "Invalid group container %group%",
     invalidErrorKey: "Invalid error key '%errorKey%'"
   };
 

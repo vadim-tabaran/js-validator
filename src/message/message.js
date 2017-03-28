@@ -15,11 +15,17 @@ var Message = (function () {
     Message.prototype.getMessageList = function (validatorResponses) {
         var messages = [];
         for (var i = 0; i < validatorResponses.length; i++) {
-            messages.push(this.getMessage(validatorResponses[i]));
+            var currMessage = this.getMessage(validatorResponses[i]);
+            if (typeof currMessage === 'string') {
+                messages.push(currMessage);
+            }
         }
         return messages;
     };
     Message.prototype.getMessage = function (response) {
+        if (response.validatorResponse === true) {
+            return false;
+        }
         var template = new template_1.Template(response);
         return template.extractMessage();
     };
