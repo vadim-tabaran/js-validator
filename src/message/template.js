@@ -23,12 +23,12 @@ var Template = (function () {
             this.inputParameters,
             this.inputDomManager.getInput().attributes
         ]).forEach(function (value, index) {
-            message = message.replace(params[index], value);
+            message = message.replace('%' + params[index] + '%', value);
         });
         return message;
     };
     Template.prototype.parseTemplateParams = function (params) {
-        return params.match(/%.*?%/g).map(function (value) { return value.replace(/%/g, ''); });
+        return params.match(/%.*?%/g).map(function (value) { return value.replace(/^%|%$/g, ''); });
     };
     Template.prototype.virtualVariableSpace = function (templateParams, params, attributes) {
         var result = [];

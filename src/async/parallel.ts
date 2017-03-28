@@ -1,4 +1,4 @@
-import {ValidateRule} from "../rules/validate-rule";
+import { ValidateRule } from "../rules/validate-rule";
 
 export class Parallel {
   private results: any[] = [];
