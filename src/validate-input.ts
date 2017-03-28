@@ -1,6 +1,5 @@
 import { RulesManager } from "./rules/manager";
 import { Async } from "./async/async";
-import { Message } from "./message/message";
 import { InputDomManager } from "./dom-manager/input";
 import { Validator } from "./validator";
 import { ValidateInputGroup } from "./validate-input-group";
@@ -9,50 +8,27 @@ import { ElementDomManager } from "./dom-manager/element";
 
 export class ValidateInput {
   private inputDomManager: InputDomManager;
-  private message: Message;
   private group: ValidateInputGroup;
 
   constructor(input: HTMLInputElement, group: ValidateInputGroup) {
     this.inputDomManager = new InputDomManager(input);
-    this.message = new Message(this.inputDomManager);
     this.group = group;
 
     this.initListeners();
   }
 
+  getInputDomManager() {
+    return this.inputDomManager;
+  }
+
   private extractCallbackChain() { // todo feature - add array name handling item[name] | item[]
-    let callbackChain = [];
-    let input = this.inputDomManager.getInput();
+    let groupContainer = this.group.getContainer();
 
-    if (this.group.length() === 1) {
-      callbackChain = this.extractRulesFromAttributes(input);
-    } else {
-      let groupContainer = this.getGroupContainer();
-      if (groupContainer === false) {
-        ErrorHandler.throw('invalidGroupContainer', { group: this.inputDomManager.getInput().name });
-        return [];
-      }
-      callbackChain = this.extractRulesFromAttributes(groupContainer);
+    if (groupContainer === false) {
+      ErrorHandler.throw('invalidGroupContainer', { group: this.inputDomManager.getInput().name });
+      return [];
     }
-    return callbackChain;
-  }
-
-  private getGroupContainer() {
-    let currentNode:any = this.inputDomManager.getInput();
-    let groupName = currentNode.name;
-
-    while (ElementDomManager.hasParentNode(currentNode)) {
-      currentNode = ElementDomManager.getParentNode(currentNode);
-      if (this.isGroupContainer(currentNode, groupName)) {
-        return currentNode;
-      }
-    }
-    return false;
-  }
-
-  private isGroupContainer(node: Element, groupName: string) {
-    return ElementDomManager.hasAttribute(node, Validator.groupAttributeName) &&
-      ElementDomManager.getAttribute(node, Validator.groupAttributeName) === groupName;
+    return this.extractRulesFromAttributes(groupContainer);
   }
 
   private initListeners() {
@@ -69,7 +45,7 @@ export class ValidateInput {
   private registerChain() {
     Async.parallel(this.extractCallbackChain()).subscribe(
       (responses: any[]) => {
-        this.message.show(responses);
+        this.group.showMessages(responses);
       }
     );
   }
@@ -123,6 +99,4 @@ export class ValidateInput {
       this.inputDomManager.getAttribute('rule-separator') || Validator.ruleSeparator
     );
   }
-
-
 }

@@ -1,14 +1,12 @@
 import { Template } from "./template";
-import { InputDomManager } from "../dom-manager/input";
 import { DefaultValidatorView } from "../default-validate-message";
+import { ValidateInputGroup } from "../validate-input-group";
 
 export class Message {
   private validatorView: MessagesView;
 
-  constructor(
-    private inputDomManager: InputDomManager
-  ) {
-    this.validatorView = new DefaultValidatorView(this.inputDomManager); // todo add customization for validation message view
+  constructor(private groupContainer: ValidateInputGroup) {
+    this.validatorView = new DefaultValidatorView(this.groupContainer); // todo add customization for validation message view
   }
 
   show(validatorResponses) {

@@ -1,18 +1,14 @@
-import { InputDomManager } from "./dom-manager/input";
+import { ValidateInputGroup } from "./validate-input-group";
 
 export class DefaultValidatorView implements MessagesView {
-  private currentInput: HTMLInputElement;
-  private messageContainer: HTMLDivElement;
+  private messageContainer: HTMLDivElement | null = null;
+  private groupContainer: Element;
 
-  constructor(
-    private inputDomManager: InputDomManager
-  ) {}
+  constructor(private group: ValidateInputGroup) {}
 
   show(messages: string[]) {
-    this.currentInput = this.inputDomManager.getInput();
-    let elementPositions = this.currentInput.getBoundingClientRect();
-
-    this.currentInput.parentElement.style.position = 'relative';
+    this.groupContainer = this.group.getContainer();
+    let elementPositions = this.groupContainer.getBoundingClientRect();
 
     this.messageContainer = this.createMessageContainer(elementPositions);
     this.appendValidatorMessages(messages);
@@ -20,12 +16,15 @@ export class DefaultValidatorView implements MessagesView {
   }
 
   destroy() {
-
+    if (this.messageContainer) {
+      this.messageContainer.parentElement.removeChild(this.messageContainer);
+      this.messageContainer = null;
+    }
   }
 
   private appendValidatorMessages(messages: string[]) {
     this.messageContainer.textContent = messages.join('<br/>');
-    this.currentInput.parentNode.appendChild(this.messageContainer);
+    this.groupContainer.parentNode.appendChild(this.messageContainer);
   }
 
   private addCloseListener() {
@@ -38,7 +37,6 @@ export class DefaultValidatorView implements MessagesView {
   private createMessageContainer(elementPositions) {
     let messageContainer = document.createElement("div");
 
-    messageContainer.classList.add('validateMessage');
     messageContainer.style.top = elementPositions.top;
 
     return messageContainer;

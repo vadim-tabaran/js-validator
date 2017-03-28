@@ -14,7 +14,6 @@ export class Validator {
     this.formDomManager = new FormDomManager(target);
     this.formDomManager.setElements();
     this.initValidator();
-    console.log('log');
   }
 
   validate() {

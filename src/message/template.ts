@@ -9,9 +9,7 @@ export class Template {
   private inputDomManager: InputDomManager;
   private validatorResponse: any;
 
-  constructor(
-    templateConfig: TemplateConfig
-  ) {
+  constructor(templateConfig: TemplateConfig) {
     this.rule = templateConfig.rule;
     this.inputParameters = templateConfig.inputParameters;
     this.inputDomManager = templateConfig.inputDomManager;
