@@ -500,31 +500,10 @@ exports.RulesManager = RulesManager;
 
 /***/ }),
 /* 10 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
 "use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var validate_input_1 = __webpack_require__(11);
-var ValidateInputGroup = (function () {
-    function ValidateInputGroup(inputs) {
-        this.inputs = [];
-        for (var i = 0; i < inputs.length; i++) {
-            this.inputs.push(new validate_input_1.ValidateInput(inputs[i], this)); // todo group without names
-        }
-    }
-    ValidateInputGroup.prototype.each = function (callback) {
-        for (var i = 0; i < this.inputs.length; i++) {
-            callback(this.inputs[i]);
-        }
-    };
-    ValidateInputGroup.prototype.length = function () {
-        return this.inputs.length;
-    };
-    return ValidateInputGroup;
-}());
-exports.ValidateInputGroup = ValidateInputGroup;
-
+throw new Error("Module build failed: Error: ENOENT: no such file or directory, open '/var/www/validator.loc/src/validate-input-group.ts'\n    at Error (native)");
 
 /***/ }),
 /* 11 */
