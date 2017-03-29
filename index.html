@@ -69,7 +69,29 @@
 </body>
 <script>
 //    var formValidator = new Validator(document.querySelector('form'));
-    var formValidator = new Validator('form');
+Validator.importRules([
+    {
+        name: 'required',
+        validate: function(next, value) {
+            console.log('custom validator');
+            next(!!value);
+        },
+        message: 'Field %attributes["v-name"]% is required'
+    }
+]);
+var formValidator = new Validator('form', {
+    rules: [
+        {
+            name: 'required',
+            validate: function(next, value) {
+                console.log('custom local validator');
+                next(!!value);
+            },
+            message: 'LOCAL Field %attributes["v-name"]% is required'
+        }
+    ]
+});
+
 //    formValidator();
 </script>
 </html>
