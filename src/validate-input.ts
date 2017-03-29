@@ -9,10 +9,12 @@ import { ElementDomManager } from "./dom-manager/element";
 export class ValidateInput {
   private inputDomManager: InputDomManager;
   private group: ValidateInputGroup;
+  private ruleManager: RulesManager;
 
-  constructor(input: HTMLInputElement, group: ValidateInputGroup) {
+  constructor(input: HTMLInputElement, group: ValidateInputGroup, ruleManager: RulesManager) {
     this.inputDomManager = new InputDomManager(input);
     this.group = group;
+    this.ruleManager = ruleManager;
 
     this.initListeners();
   }
@@ -57,8 +59,9 @@ export class ValidateInput {
     }
 
     let callbackChain = [];
-    for (let i = 0; i < RulesManager.rules.length; i++) {
-      let attributeName = RulesManager.rules[i].name;
+    let rules = this.ruleManager.getRules();
+    for (let i = 0; i < rules.length; i++) {
+      let attributeName = rules[i].name;
 
       if (ElementDomManager.hasAttribute(element, attributeName)) {
         callbackChain.push(this.prepareRuleCallback(RulesManager.rules[i]));

@@ -1,5 +1,6 @@
 import { FormDomManager } from "./dom-manager/form";
 import { ValidateInputGroup } from "./validate-input-group";
+import { RulesManager } from "./rules/manager";
 
 export class Validator {
   static preFix = 'v-';
@@ -9,15 +10,22 @@ export class Validator {
   static groupAttributeName = 'group';
 
   private formDomManager: FormDomManager;
+  private inputGroups: ValidateInputGroup[] = [];
+  private rules: RulesManager;
 
   constructor(target: Element | string, config = {}) { // todo config import
     this.formDomManager = new FormDomManager(target);
+    this.rules = new RulesManager(config);
     this.formDomManager.setElements();
     this.initValidator();
   }
 
   validate() {
 
+  }
+
+  static importRules(rules: Rule[]) {
+    RulesManager.appendRules(rules);
   }
 
   private initValidator() {
@@ -51,15 +59,11 @@ export class Validator {
     }
 
     for (let groupName in groups) {
-      new ValidateInputGroup(groups[groupName]);
+      this.inputGroups.push(new ValidateInputGroup(groups[groupName], this.rules));
     }
   }
 
   private onFormSubmit(event: Event) { // todo On Form Submit
-
-  }
-
-  static importRules() { // todo importRules
 
   }
 }
