@@ -64,7 +64,7 @@ export class ValidateInput {
       let attributeName = rules[i].name;
 
       if (ElementDomManager.hasAttribute(element, attributeName)) {
-        callbackChain.push(this.prepareRuleCallback(RulesManager.rules[i]));
+        callbackChain.push(this.prepareRuleCallback(rules[i]));
       }
     }
     return callbackChain;

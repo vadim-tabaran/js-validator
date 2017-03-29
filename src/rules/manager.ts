@@ -7,7 +7,6 @@ export class RulesManager {
   constructor(config) {
     config.rules = config.rules || [];
     this.mergedRules = RulesManager.mergeRules(config.rules);
-    console.log(this.mergedRules);
   }
 
   getRules() {
