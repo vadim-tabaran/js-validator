@@ -23,6 +23,18 @@ export class ValidateInput {
     return this.inputDomManager;
   }
 
+  registerChain(appendResponseCallback: any = false) {
+    Async.parallel(this.extractCallbackChain()).subscribe(
+      (responses: any[]) => {
+        if (appendResponseCallback !== false) {
+          let invalidRuleResponses = responses.filter((response) => response.validatorResponse === false);
+          appendResponseCallback(invalidRuleResponses.length > 0);
+        }
+        this.group.showMessages(responses);
+      }
+    );
+  }
+
   private extractCallbackChain() { // todo feature - add array name handling item[name] | item[]
     let groupContainer = this.group.getContainer();
 
@@ -42,14 +54,6 @@ export class ValidateInput {
         () => this.registerChain()
       );
     }
-  }
-
-  private registerChain() {
-    Async.parallel(this.extractCallbackChain()).subscribe(
-      (responses: any[]) => {
-        this.group.showMessages(responses);
-      }
-    );
   }
 
   private extractRulesFromAttributes(element: HTMLElement | false) {
@@ -80,6 +84,7 @@ export class ValidateInput {
             validatorResponse: validatorResponse,
             inputParameters: inputParameters,
             inputDomManager: this.inputDomManager,
+            group: this.group,
             rule: rule
           });
         },

@@ -1,8 +1,8 @@
-import { InputDomManager } from "../dom-manager/input";
+import {ValidateInputGroup} from "../validate-input-group";
 
 export interface TemplateConfig {
   validatorResponse: any,
   inputParameters: string[],
-  inputDomManager: InputDomManager,
+  group: ValidateInputGroup,
   rule: Rule
 }

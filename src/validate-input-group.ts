@@ -3,6 +3,7 @@ import { ElementDomManager } from "./dom-manager/element";
 import { Validator } from "./validator";
 import { Message } from "./message/message";
 import { RulesManager } from "./rules/manager";
+import { Async } from "./async/async";
 
 export class ValidateInputGroup {
   private inputs: ValidateInput[] = [];
@@ -18,18 +19,26 @@ export class ValidateInputGroup {
     this.ruleManager = ruleManager;
   }
 
-  each(callback) {
-    for (let i = 0; i < this.inputs.length; i++) {
-      callback(this.inputs[i]);
-    }
-  }
-
   length() {
     return this.inputs.length;
   }
 
   showMessages(messages) {
     this.message.show(messages);
+  }
+
+  validate(appendResponseCallback) {
+    let callbacksStack = [];
+
+    for (let i = 0; i < this.inputs.length; i++) {
+      callbacksStack.push((next) => this.inputs[i].registerChain(next));
+    }
+
+    Async.parallel(callbacksStack).subscribe((responses) => {
+      let inputInvalidResponses = responses.filter((inputValidResponse) => inputValidResponse === false);
+
+      appendResponseCallback(inputInvalidResponses.length > 0);
+    });
   }
 
   getContainer() {
@@ -41,14 +50,22 @@ export class ValidateInputGroup {
 
     while (ElementDomManager.hasParentNode(currentNode)) {
       currentNode = ElementDomManager.getParentNode(currentNode);
-      if (this.isGroupContainer(currentNode, groupName)) {
+      if (ValidateInputGroup.isGroupContainer(currentNode, groupName)) {
         return currentNode;
       }
     }
     return false;
   }
 
-  private isGroupContainer(node: Element, groupName: string) {
+  hasAttribute(attributeName: string) {
+    return ElementDomManager.hasAttribute(this.getContainer(), attributeName);
+  }
+
+  getAttribute(attributeName: string) {
+    return ElementDomManager.getAttribute(this.getContainer(), attributeName);
+  }
+
+  static isGroupContainer(node: Element, groupName: string) {
     return ElementDomManager.hasAttribute(node, Validator.groupAttributeName) &&
       ElementDomManager.getAttribute(node, Validator.groupAttributeName) === groupName;
   }

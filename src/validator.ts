@@ -1,6 +1,7 @@
 import { FormDomManager } from "./dom-manager/form";
 import { ValidateInputGroup } from "./validate-input-group";
 import { RulesManager } from "./rules/manager";
+import {Async} from "./async/async";
 
 export class Validator {
   static preFix = 'v-';
@@ -8,16 +9,19 @@ export class Validator {
   static messagePostFix = '-message';
   static customValidateResponseMethodName = 'validate';
   static groupAttributeName = 'group';
+  static onSubmit;
 
   private formDomManager: FormDomManager;
   private inputGroups: ValidateInputGroup[] = [];
   private rules: RulesManager;
+  private config: any;
 
   constructor(target: Element | string, config = {}) { // todo config import
     this.formDomManager = new FormDomManager(target);
     this.rules = new RulesManager(config);
     this.formDomManager.setElements();
     this.initValidator();
+    this.config = config;
   }
 
   validate() {
@@ -63,8 +67,34 @@ export class Validator {
     }
   }
 
-  private onFormSubmit(event: Event) { // todo On Form Submit
+  private onFormSubmit(event: Event) {
+    let callbacksChain = [];
 
+    for (let i = 0; i < this.inputGroups.length; i++) {
+      callbacksChain.push((appendResponseCallback) => {
+        this.inputGroups[i].validate(appendResponseCallback);
+      });
+    }
+
+    Async.parallel(callbacksChain).subscribe((groupResponses: boolean[]) => {
+      let invalidGroups = groupResponses.filter((value) => value === false);
+
+      this.handleOnSubmit(event, invalidGroups.length === 0)
+    });
+  }
+
+  private handleOnSubmit(event: Event, isValid: boolean) {
+    if (typeof this.config.onSubmit === "function") {
+      return this.config.onSubmit.call(event.target, event, isValid);
+    }
+
+    if (typeof Validator.onSubmit === "function") {
+      return Validator.onSubmit.call(event.target, event, isValid);
+    }
+
+    if (!isValid) {
+      event.preventDefault();
+    }
   }
 }
 

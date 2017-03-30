@@ -1,18 +1,18 @@
-import { InputDomManager } from "../dom-manager/input";
 import { TemplateConfig } from "../interfaces/template-config";
 import { Validator } from "../validator";
 import { ErrorHandler } from "../error";
+import {ValidateInputGroup} from "../validate-input-group";
 
 export class Template {
   private rule: Rule;
   private inputParameters: string[];
-  private inputDomManager: InputDomManager;
+  private group: ValidateInputGroup;
   private validatorResponse: any;
 
   constructor(templateConfig: TemplateConfig) {
     this.rule = templateConfig.rule;
     this.inputParameters = templateConfig.inputParameters;
-    this.inputDomManager = templateConfig.inputDomManager;
+    this.group = templateConfig.group;
     this.validatorResponse = templateConfig.validatorResponse;
   }
 
@@ -39,7 +39,7 @@ export class Template {
   }
 
   private prepareAttributes() {
-    let attributes = this.inputDomManager.getInput().attributes;
+    let attributes = this.group.getContainer().attributes;
     let attributesAssoc = {};
     for (let i = 0; i < attributes.length; i++) {
       attributesAssoc[attributes[i].name] = attributes[i].value;
@@ -68,8 +68,8 @@ export class Template {
   }
 
   private getMessageTemplate() { // todo if returns false or async
-    if (this.inputDomManager.hasAttribute(this.rule.name + Validator.messagePostFix)) {
-      return this.inputDomManager.getAttribute(this.rule.name + Validator.messagePostFix);
+    if (this.group.hasAttribute(this.rule.name + Validator.messagePostFix)) {
+      return this.group.getAttribute(this.rule.name + Validator.messagePostFix);
     }
 
     if (this.validatorResponse instanceof Function) {

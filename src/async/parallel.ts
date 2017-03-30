@@ -15,13 +15,17 @@ export class Parallel {
 
   subscribe(callback) {
     this.endCallback = callback;
+    let rulesLength = this.ruleStack.length;
 
-    for (let i = 0; i < this.ruleStack.length; i++) {
-      this.ruleStack[i]((validatorResponse) => {
-        this.appendResponse(validatorResponse);
-      });
+    if (rulesLength === 0) {
+      this.endCallback(this.results);
+    } else {
+      for (let i = 0; i < this.ruleStack.length; i++) {
+        this.ruleStack[i]((validatorResponse) => {
+          this.appendResponse(validatorResponse);
+        });
+      }
     }
-
     return this;
   }
 
