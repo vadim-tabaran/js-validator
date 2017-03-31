@@ -4,13 +4,14 @@ import { Validator } from "./validator";
 import { Message } from "./message/message";
 import { RulesManager } from "./rules/manager";
 import { Async } from "./async/async";
+import { HTMLValidateInput } from "./types";
 
 export class ValidateInputGroup {
   private inputs: ValidateInput[] = [];
   private message: Message;
   private ruleManager: RulesManager;
 
-  constructor(inputs: HTMLInputElement[], ruleManager) { // todo group by attribute ( customization )
+  constructor(inputs: HTMLValidateInput[], ruleManager) { // todo group by attribute ( customization )
     for(let i = 0; i < inputs.length; i++) {
       this.inputs.push(new ValidateInput(inputs[i], this, ruleManager)); // todo group without names
     }
@@ -30,9 +31,9 @@ export class ValidateInputGroup {
   validate(appendResponseCallback) {
     let callbacksStack = [];
 
-    for (let i = 0; i < this.inputs.length; i++) {
-      callbacksStack.push((next) => this.inputs[i].registerChain(next));
-    }
+    let activeInput = this.getActiveInput();
+
+    callbacksStack.push((next) => activeInput.registerChain(next));
 
     Async.parallel(callbacksStack).subscribe((responses) => {
       let inputInvalidResponses = responses.filter((inputValidResponse) => inputValidResponse === false);
@@ -68,5 +69,20 @@ export class ValidateInputGroup {
   static isGroupContainer(node: Element, groupName: string) {
     return ElementDomManager.hasAttribute(node, Validator.groupAttributeName) &&
       ElementDomManager.getAttribute(node, Validator.groupAttributeName) === groupName;
+  }
+
+  private getActiveInput() {
+    if (this.inputs.length === 1) {
+      return this.inputs[0];
+    }
+
+    for (let i = 0; i < this.inputs.length; i++) {
+      let currentInput = this.inputs[i].getInputDomManager().getInput();
+      if (currentInput instanceof HTMLInputElement && currentInput.checked) {
+        return this.inputs[i];
+      }
+    }
+
+    return this.inputs[0];
   }
 }

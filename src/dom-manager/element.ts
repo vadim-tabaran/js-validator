@@ -1,4 +1,4 @@
-import {Validator} from "../validator";
+import { Validator } from "../validator";
 
 export class ElementDomManager {
   static hasAttribute(element: Element, attrKey: string) {

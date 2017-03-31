@@ -1,8 +1,11 @@
-import {ErrorHandler} from "../error";
+import { ErrorHandler } from "../error";
+import { HTMLValidateInput } from "../types";
+
+
 
 export class FormDomManager{
   private formElement: HTMLFormElement | null = null;
-  private inputs: HTMLInputElement[] = [];
+  private inputs: HTMLValidateInput[] = [];
   private target: Element | string = '';
 
   constructor(target: Element | string){
@@ -16,16 +19,16 @@ export class FormDomManager{
         this.formElement = targetElement;
         this.actualizeFormInputs();
         return true;
-      } else if (targetElement instanceof HTMLInputElement) {
-        this.inputs.push(targetElement);
+      } else if (FormDomManager.isInput(targetElement)) {
+        this.inputs.push(<HTMLValidateInput>targetElement);
         return true;
       } else {
         return new ErrorHandler('invalidSelector', {'selector': this.target});
       }
     }
 
-    if (this.target instanceof HTMLInputElement) {
-      this.inputs.push(this.target);
+    if (FormDomManager.isInput(this.target)) {
+      this.inputs.push(<HTMLValidateInput>this.target);
       return true;
     }
 
@@ -36,7 +39,7 @@ export class FormDomManager{
     return this.formElement;
   }
 
-  getInputs(): HTMLInputElement[] {
+  getInputs(): HTMLValidateInput[] {
     return this.inputs;
   }
 
@@ -46,10 +49,16 @@ export class FormDomManager{
     }
 
     for (let inputName in this.formElement.elements) {
-      let currentElement = this.formElement.elements[inputName];
-      if (currentElement instanceof HTMLInputElement && this.inputs.indexOf(currentElement) === -1){
-        this.inputs.push(<HTMLInputElement>this.formElement.elements[inputName]);
+      let currentElement = <HTMLValidateInput>this.formElement.elements[inputName];
+      if (FormDomManager.isInput(currentElement) && this.inputs.indexOf(currentElement) === -1){
+        this.inputs.push(<HTMLValidateInput>this.formElement.elements[inputName]);
       }
     }
+  }
+
+  static isInput(element) {
+    return  element instanceof HTMLInputElement ||
+            element instanceof HTMLTextAreaElement ||
+            element instanceof HTMLSelectElement;
   }
 }

@@ -48,9 +48,14 @@
             <input type="file" id="exampleInputFile" name="file">
             <p class="help-block">Example block-level help text here.</p>
         </div>
+        <div class="form-group">
+            <label for="textarea">Description</label>
+            <textarea cols="30" id="textarea" rows="10" v-required v-name="Textarea"></textarea>
+        </div>
+
         <div class="checkbox" v-group="radio1" v-required v-required-message="REQUIRED GROUP">
             <label>
-                <input type="radio" name="radio1" value="" v-name="Check 2" v-required-message="REQUIRED" checked> Check me out
+                <input type="radio" name="radio1" value="" v-name="Check 2" v-required-message="REQUIRED"> Check me out
             </label>
             <label>
                 <input type="radio" name="radio1" value="1" v-name="Check 2"> Check me out

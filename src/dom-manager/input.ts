@@ -1,7 +1,8 @@
-import {ElementDomManager} from "./element";
+import { ElementDomManager } from "./element";
+import { HTMLValidateInput } from "../types";
 
 export class InputDomManager {
-  constructor(private input: HTMLInputElement) {}
+  constructor(private input: HTMLValidateInput ) {}
 
   getInput() {
     return this.input;
@@ -29,9 +30,8 @@ export class InputDomManager {
       return this.input.options[this.input.selectedIndex].nodeValue;
     }
 
-    if (['radio', 'checkbox'].indexOf(this.input.getAttribute('type')) !== -1) {
-      let checkedInput = <HTMLInputElement | null>document.querySelector('input[name="' + this.input.name + '"]:checked');
-      return checkedInput ? checkedInput.value : false;
+    if (this.input instanceof HTMLInputElement && ['radio', 'checkbox'].indexOf(this.input.getAttribute('type')) !== -1) {
+      return this.input.checked === true ? this.input.value : false;
     }
 
     return this.input.value;

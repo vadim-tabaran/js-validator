@@ -1,0 +1,1 @@
+export type HTMLValidateInput = (HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement);

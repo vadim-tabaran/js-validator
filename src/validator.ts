@@ -53,7 +53,6 @@ export class Validator {
     }
 
     let groups = {};
-
     for (let i = 0; i < inputElements.length; i++) {
       if (!groups.hasOwnProperty(inputElements[i].name)) {
         groups[inputElements[i].name] = [];
@@ -68,6 +67,7 @@ export class Validator {
   }
 
   private onFormSubmit(event: Event) {
+    event.preventDefault();
     let callbacksChain = [];
 
     for (let i = 0; i < this.inputGroups.length; i++) {
@@ -79,7 +79,7 @@ export class Validator {
     Async.parallel(callbacksChain).subscribe((groupResponses: boolean[]) => {
       let invalidGroups = groupResponses.filter((value) => value === false);
 
-      this.handleOnSubmit(event, invalidGroups.length === 0)
+      this.handleOnSubmit(event, invalidGroups.length === 0);
     });
   }
 

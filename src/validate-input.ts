@@ -5,13 +5,18 @@ import { Validator } from "./validator";
 import { ValidateInputGroup } from "./validate-input-group";
 import { ErrorHandler } from "./error";
 import { ElementDomManager } from "./dom-manager/element";
+import { HTMLValidateInput } from "./types";
 
 export class ValidateInput {
   private inputDomManager: InputDomManager;
   private group: ValidateInputGroup;
   private ruleManager: RulesManager;
 
-  constructor(input: HTMLInputElement, group: ValidateInputGroup, ruleManager: RulesManager) {
+  constructor(
+    input: HTMLValidateInput,
+    group: ValidateInputGroup,
+    ruleManager: RulesManager
+  ) {
     this.inputDomManager = new InputDomManager(input);
     this.group = group;
     this.ruleManager = ruleManager;
@@ -37,7 +42,6 @@ export class ValidateInput {
 
   private extractCallbackChain() { // todo feature - add array name handling item[name] | item[]
     let groupContainer = this.group.getContainer();
-
     if (groupContainer === false) {
       ErrorHandler.throw('invalidGroupContainer', { group: this.inputDomManager.getInput().name });
       return [];
@@ -77,7 +81,6 @@ export class ValidateInput {
   private prepareRuleCallback(rule) {
     return (appendResponseCallback) => {
       let inputParameters = this.extractParameters(rule);
-
       let validatorParameters = [
         (validatorResponse) => {
           appendResponseCallback({
