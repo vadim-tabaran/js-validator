@@ -23,7 +23,7 @@ export class DefaultValidatorView implements MessagesView {
   }
 
   private appendValidatorMessages(messages: string[]) {
-    this.messageContainer.textContent = messages.join('<br/>');
+    this.messageContainer.innerHTML = messages.join('<br>');
     this.groupContainer.parentNode.appendChild(this.messageContainer);
   }
 

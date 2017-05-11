@@ -1,7 +1,7 @@
 import { FormDomManager } from "./dom-manager/form";
 import { ValidateInputGroup } from "./validate-input-group";
 import { RulesManager } from "./rules/manager";
-import {Async} from "./async/async";
+import { Async } from "./async/async";
 
 export class Validator {
   static preFix = 'v-';
@@ -9,6 +9,7 @@ export class Validator {
   static messagePostFix = '-message';
   static customValidateResponseMethodName = 'validate';
   static groupAttributeName = 'group';
+  static validateOnAttribute = 'on';
   static onSubmit;
 
   private formDomManager: FormDomManager;
@@ -67,7 +68,6 @@ export class Validator {
   }
 
   private onFormSubmit(event: Event) {
-    event.preventDefault();
     let callbacksChain = [];
 
     for (let i = 0; i < this.inputGroups.length; i++) {

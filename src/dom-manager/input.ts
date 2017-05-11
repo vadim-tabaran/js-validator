@@ -1,5 +1,6 @@
 import { ElementDomManager } from "./element";
 import { HTMLValidateInput } from "../types";
+import {Validator} from "../validator";
 
 export class InputDomManager {
   constructor(private input: HTMLValidateInput ) {}
@@ -9,7 +10,7 @@ export class InputDomManager {
   }
 
   getValidateOnEvents() {
-    let validateOnAttributeValue = this.getAttribute('validate-on');
+    let validateOnAttributeValue = this.getAttribute(Validator.validateOnAttribute);
     return validateOnAttributeValue ? validateOnAttributeValue.split('|') : ['change'];
   }
 
